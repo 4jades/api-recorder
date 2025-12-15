@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { groupEvents } from '../utils/group-events';
 import { shouldIgnoreEvent } from '../utils/should-ignore-event';
 import type { TGroupedEvent } from './grouped-events.types';
@@ -19,45 +20,54 @@ type TEventState = {
   deleteGroup: (requestId: string) => void;
 };
 
-const useEventStore = create<TEventState>((set, get) => ({
-  events: [],
-  groupedEvents: [],
-  ignore: [],
+const useEventStore = create<TEventState>()(
+  persist(
+    (set, get) => ({
+      events: [],
+      groupedEvents: [],
+      ignore: [],
 
-  setIgnore: ignore => set({ ignore }),
+      setIgnore: ignore => set({ ignore }),
 
-  pushEvent: event => {
-    const state = get();
-    if (shouldIgnoreEvent(event, state.ignore)) return;
+      pushEvent: event => {
+        const state = get();
+        if (shouldIgnoreEvent(event, state.ignore)) return;
 
-    // 이벤트 추가
-    const newEvents = [...state.events, event];
+        // 이벤트 추가
+        const newEvents = [...state.events, event];
 
-    // 자동 그룹화
-    const newGroupedEvents = groupEvents(newEvents);
+        // 자동 그룹화
+        const newGroupedEvents = groupEvents(newEvents);
 
-    set({
-      events: newEvents,
-      groupedEvents: newGroupedEvents,
-    });
-  },
+        set({
+          events: newEvents,
+          groupedEvents: newGroupedEvents,
+        });
+      },
 
-  clearEvents: () => set({ events: [], groupedEvents: [] }),
+      clearEvents: () => set({ events: [], groupedEvents: [] }),
 
-  deleteGroup: requestId => {
-    const state = get();
+      deleteGroup: requestId => {
+        const state = get();
 
-    // 해당 requestId와 관련된 모든 이벤트 제거
-    const filteredEvents = state.events.filter(event => event.requestId !== requestId);
+        // 해당 requestId와 관련된 모든 이벤트 제거
+        const filteredEvents = state.events.filter(event => event.requestId !== requestId);
 
-    // 그룹화된 이벤트에서도 제거
-    const filteredGroupedEvents = state.groupedEvents.filter(group => group.requestId !== requestId);
+        // 그룹화된 이벤트에서도 제거
+        const filteredGroupedEvents = state.groupedEvents.filter(group => group.requestId !== requestId);
 
-    set({
-      events: filteredEvents,
-      groupedEvents: filteredGroupedEvents,
-    });
-  },
-}));
+        set({
+          events: filteredEvents,
+          groupedEvents: filteredGroupedEvents,
+        });
+      },
+    }),
+    {
+      name: 'api-recorder:events',
+      skipHydration: false,
+      storage: createJSONStorage(() => sessionStorage),
+    },
+  ),
+);
 
 export { useEventStore };

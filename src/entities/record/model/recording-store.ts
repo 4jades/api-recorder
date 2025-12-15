@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 type TRecordingState = {
   isRecording: boolean;
@@ -24,6 +24,7 @@ const useRecordingStore = create<TRecordingState>()(
     {
       name: 'api-recorder:recording',
       skipHydration: false,
+      storage: createJSONStorage(() => sessionStorage),
     },
   ),
 );
