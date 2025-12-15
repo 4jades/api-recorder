@@ -1,5 +1,7 @@
 # 🎥 API Recorder
 
+> **⚠️ DEPRECATED**: 이 패키지는 더 이상 사용되지 않습니다. 이제부터는 [@jjades/api-recorder](https://www.npmjs.com/package/@jjades/api-recorder)에서 관리됩니다.
+
 React 애플리케이션에서 다음을 자동으로 수집/시각화하는 개발자 도구입니다.
 - HTTP 요청/응답(`fetch`, `XHR`)
 - 스트리밍 응답(텍스트 기반 `ReadableStream`)
